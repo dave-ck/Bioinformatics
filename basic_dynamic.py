@@ -15,7 +15,6 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t):
     backtrack = init_backtrack(m, n)
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            print(i, ",", j)
             matrix_v[j][i] = max(matrix_v[j - 1][i - 1]
                                  + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1]),
                                  matrix_v[j - 1][i]
@@ -29,6 +28,9 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t):
                 backtrack[j][i] = "U"
             elif matrix_v[j][i] == matrix_v[j][i - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], "_"):
                 backtrack[j][i] = "L"
+            if matrix_v[j][i] < 0:
+                matrix_v[j][i] = 0
+                backtrack[j][i] = "E"
     i, j = m, n
     aligned_s = ""
     aligned_t = ""
@@ -44,13 +46,11 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t):
             aligned_s = seq_s[i] + aligned_s
             aligned_t = seq_t[j] + aligned_t
             pointer = backtrack[j][i]
-
         elif pointer == "L":
             i -= 1
             aligned_s = seq_s[i] + aligned_s
             aligned_t = " " + aligned_t
             pointer = backtrack[j][i]
-
         elif pointer == "U":
             j -= 1
             aligned_t = seq_t[j] + aligned_t
@@ -109,13 +109,13 @@ a = dynprog("ABCD",[
 [-5, 1,-5,-5,-1],
 [-5,-5, 5,-5,-4],
 [-5,-5,-5, 6,-4],
-[-1,-1,-4,-4,-9]], "CCDDCCDDAAAAACC", "CCAAADDAAAACCAAADDCC")
+[-1,-1,-4,-4,-9]], "AAAAACCDDCCDDAAAAACC", "CCAAADDAAAACCAAADDCCAAAA")
 display_alignment(a)
 print("Score:   ", a[2])
 print("Indices: ", a[3], a[4])
 
 print("\n\n")
-a = dynprog ("ABC", [[1,-1,-2,-1],[-1,2,-4,-1],[-2,-4,3,-2],[-1,-1,-2,0]], "AABBAACA", "CBACCCBA")
+a = dynprog("ABC", [[1,-1,-2,-1],[-1,2,-4,-1],[-2,-4,3,-2],[-1,-1,-2,0]], "AABBAACA", "CBACCCBA")
 print("Score:   ", a[2])
 print("Indices: ", a[3],a[4])
 display_alignment(a)
