@@ -3,8 +3,7 @@ import numpy as np
 
 # IMPORTANT: refactor and verify function signatures
 
-
-def dynprog_np(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
+def dynprog(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
     scoring_matrix = np.array(scoring_matrix)
     m, n = len(seq_s), len(seq_t)
     backtrack = np.empty([m + 1, n + 1], dtype=str)  # points U(p), L(eft), D(iagonal), or E(nd)
@@ -73,80 +72,10 @@ def dynprog_np(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
             pointer = backtrack[i, j]
     display_alignment(show_s, show_t)
     print("Best score (in-function, at return):", best_score)
-    return [show_s, show_t, best_score, alignment_s, alignment_t]
+    return [best_score, alignment_s, alignment_t]
 
 
-def dynprog(alphabet, scoring_matrix, seq_s, seq_t):
-    # m rows, n columns - bottom corner is mat[n+1][m+1]
-    m, n = len(seq_s), len(seq_t)
-    matrix_v = init_v(m, n)
-    backtrack = init_backtrack(m, n)
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            matrix_v[j][i] = max(matrix_v[j - 1][i - 1]
-                                 + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1]),
-                                 matrix_v[j - 1][i]
-                                 + score(alphabet, scoring_matrix, "_", seq_t[j - 1]),
-                                 matrix_v[j][i - 1]
-                                 + score(alphabet, scoring_matrix, seq_s[i - 1], "_"))
-
-            if matrix_v[j][i] == matrix_v[j - 1][i - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1]):
-                backtrack[j][i] = "D"
-            elif matrix_v[j][i] == matrix_v[j - 1][i] + score(alphabet, scoring_matrix, "_", seq_t[j - 1]):
-                backtrack[j][i] = "U"
-            elif matrix_v[j][i] == matrix_v[j][i - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], "_"):
-                backtrack[j][i] = "L"
-            if matrix_v[j][i] < 0:
-                matrix_v[j][i] = 0
-                backtrack[j][i] = "E"
-    i, j = m, n
-    aligned_s = ""
-    aligned_t = ""
-    alignment_s = []
-    alignment_t = []
-    pointer = backtrack[j][i]
-    while pointer != "E":
-        if pointer == "D":
-            j -= 1
-            i -= 1
-            alignment_s.insert(0, i)
-            alignment_t.insert(0, j)
-            aligned_s = seq_s[i] + aligned_s
-            aligned_t = seq_t[j] + aligned_t
-            pointer = backtrack[j][i]
-        elif pointer == "L":
-            i -= 1
-            aligned_s = seq_s[i] + aligned_s
-            aligned_t = " " + aligned_t
-            pointer = backtrack[j][i]
-        elif pointer == "U":
-            j -= 1
-            aligned_t = seq_t[j] + aligned_t
-            aligned_s = " " + aligned_s
-            pointer = backtrack[j][i]
-    return [aligned_s, aligned_t, matrix_v[n][m], alignment_s, alignment_t]
-
-
-def init_backtrack(length1, length2):
-    mat = [["" for i in range(length1 + 1)] for j in range(length2 + 1)]
-    for i in range(1, length1 + 1):
-        mat[0][i] = "L"
-    for j in range(1, length2 + 1):
-        mat[j][0] = "U"
-    mat[0][0] = "E"
-    return mat
-
-
-def init_v(length1, length2):
-    mat = [[0 for i in range(length1 + 1)] for j in range(length2 + 1)]
-    for i in range(1, length1 + 1):
-        mat[0][i] = mat[0][i - 1] - 2
-    for j in range(1, length2 + 1):
-        mat[j][0] = mat[j - 1][0] - 2
-    return mat
-
-
-# one-line function, leave to keep clean (?)
+# one-line function, keep for cleaner code
 def score(alphabet, scoring_matrix, char1, char2):
     return scoring_matrix[(char1 == "_") * -1 or alphabet.index(char1)][(char2 == "_") * -1 or alphabet.index(char2)]
 
@@ -166,7 +95,7 @@ def display_alignment(string1, string2):
 
 # test code below
 
-
+"""
 sigma = "ABCD"
 score_matrix = [[1, -5, -5, -5, -1],
                 [-5, 1, -5, -5, -1],
@@ -175,5 +104,5 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-1, -1, -4, -4, -9]]
 
 a = dynprog_np(sigma, score_matrix, "AAAAACCDDCCDDAAAAACC", "CCAAADDAAAACCAAADDCCAAAA")
-print("Score:   ", a[2])
-print("Indices: ", a[3], a[4])
+
+"""
