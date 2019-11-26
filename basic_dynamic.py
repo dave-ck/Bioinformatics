@@ -3,7 +3,7 @@ import numpy as np
 
 # IMPORTANT: refactor and verify function signatures
 
-def dynprog(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
+def dynprog(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     scoring_matrix = np.array(scoring_matrix)
     m, n = len(seq_s), len(seq_t)
     backtrack = np.empty([m + 1, n + 1], dtype=str)  # points U(p), L(eft), D(iagonal), or E(nd)
@@ -16,10 +16,6 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
             from_diagonal = matrix_v[i - 1, j - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1])
             from_up = matrix_v[i, j - 1] + score(alphabet, scoring_matrix, "_", seq_t[j - 1])
             from_left = matrix_v[i - 1, j] + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
-            if from_left >= matrix_v[i - 1, j]:
-                print(from_left)
-                print(matrix_v[i - 1, j])
-                print("Wat.")
             if best <= from_diagonal:
                 best = from_diagonal
                 backtrack[i, j] = "D"
@@ -41,16 +37,11 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
     alignment_s, alignment_t = [], []
     show_s, show_t = "", ""
     best_score = np.amax(matrix_v)
-    print("Best score (in-function, at compute):", best_score)
     best_mat = np.where(matrix_v == best_score)
     i, j = best_mat[0][0], best_mat[1][0]
     pointer = backtrack[i, j]
-    print("Max value is {}, found at {}, {}".format(matrix_v[i, j], i, j))
-    print(matrix_v)
-    print(backtrack)
     turn = 0
     while pointer != "E":
-        print("Step {}, pointer {}".format(turn, pointer))
         turn += 1
         if pointer == "D":
             j -= 1
@@ -70,8 +61,8 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, debug=False):
             show_t = seq_t[j] + show_t
             show_s = " " + show_s
             pointer = backtrack[i, j]
-    display_alignment(show_s, show_t)
-    print("Best score (in-function, at return):", best_score)
+    if show_alignment:
+        display_alignment(show_s, show_t)
     return [best_score, alignment_s, alignment_t]
 
 
