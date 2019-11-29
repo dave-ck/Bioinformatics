@@ -5,12 +5,12 @@ import numpy as np
 
 def dynprog(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     scoring_matrix = np.array(scoring_matrix)
-    m, n = len(seq_s), len(seq_t)
-    backtrack = np.empty([m + 1, n + 1], dtype=str)  # points U(p), L(eft), D(iagonal), or E(nd)
+    len_s, len_t = len(seq_s), len(seq_t)
+    backtrack = np.empty([len_s + 1, len_t + 1], dtype=str)  # points U(p), L(eft), D(iagonal), or E(nd)
     backtrack[:, :] = "E"
-    matrix_v = np.zeros([m + 1, n + 1], dtype=int)  # because doing local alignment, no negative values
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
+    matrix_v = np.zeros([len_s + 1, len_t + 1], dtype=int)  # because doing local alignment, no negative values
+    for i in range(1, len_s + 1):
+        for j in range(1, len_t + 1):
             best = 0
             reset = True
             from_diagonal = matrix_v[i - 1, j - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1])
