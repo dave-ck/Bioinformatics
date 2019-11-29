@@ -25,6 +25,11 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, ktup=2, show_alignment=Fal
                     ij_diff_dict[i - j].append(i)  # instead of storing {diff:(i,j)} store {diff:i} and find j=i+diff
                 else:
                     ij_diff_dict[i - j] = [i]
+    # select and print maximum diagonals
+    threshold = 3
+    for diff in ij_diff_dict:
+        if len(ij_diff_dict[diff]) > threshold:
+            display_diagonal(seq_s, seq_t, diff)
     # tag diagonals (frequence analysis for each? naive count of matches along diagonal?)
 
     # for high i-j offset frequency (diagonals with many pieces) combine pieces into regions by extending pieces
@@ -42,17 +47,25 @@ def score(alphabet, scoring_matrix, char1, char2):
     return scoring_matrix[(char1 == "_") * -1 or alphabet.index(char1)][(char2 == "_") * -1 or alphabet.index(char2)]
 
 
+def display_diagonal(string1, string2, diff):
+    print("With ijdiff == {}:".format(diff))
+    if diff < 0:
+        display_alignment(-1 * diff * "-" + string1, string2)
+    else:
+        display_alignment(string1, diff * "-" + string2)
+
+
 def display_alignment(string1, string2):
-    string3 = ''
+    string3 = ""
     for i in range(min(len(string1), len(string2))):
         if string1[i] == string2[i]:
             string3 = string3 + "|"
         else:
             string3 = string3 + " "
-    print('Alignment ')
-    print('String1: ' + string1)
-    print('         ' + string3)
-    print('String2: ' + string2 + '\n\n')
+    print("Alignment ")
+    print("String1: " + string1)
+    print("         " + string3)
+    print("String2: " + string2 + "\n\n")
 
 
 sigma = "ABCD"
