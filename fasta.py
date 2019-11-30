@@ -20,6 +20,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
             index_table[x].append(i)
     # sort according to distance i-j
     ij_diff_dict = {}
+    max_score_for_diff = {}
     for j in range(len_t):
         current_subseq = seq_t[j:j + ktup]
         if current_subseq in index_table:
@@ -31,6 +32,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     # select and print maximum diagonals
     for diff in ij_diff_dict:
         if len(ij_diff_dict[diff]) > min_seeds_to_extend:
+            max_score_for_diff[diff] = 0
             seed_list = ij_diff_dict[diff]
             display_diagonal(seq_s, seq_t, diff)
             for seed_i in seed_list:
@@ -87,7 +89,6 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                     current_score = best_score
                     # reset/backtrack to highest score yet
                 print("Best alignment from seed_i = {} and diff = {}: score = {}:".format(seed_i, diff, best_score))
-
                 print("Best start i = {}; Best start j = {}".format(best_start_i, best_start_j))
                 print("Best end i = {}; Best end j = {}".format(best_end_i, best_end_j))
                 s_sub = seq_s[best_start_i:best_end_i]
@@ -96,7 +97,8 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                                                                                  score_seqs(alphabet, scoring_matrix,
                                                                                             t_sub, s_sub)))
                 display_alignment(s_sub, t_sub)
-
+                max_score_for_diff[diff] = max(max_score_for_diff[diff], best_score)
+    print(max_score_for_diff)
     # have obtained all diagonals
     # select highest-scoring ones
     # identify ones whose bands would overlap - these get wider bands
@@ -144,4 +146,5 @@ t = "AAAAACCDDCCDDAAAAACC"
 
 heuralign(sigma, score_matrix, s, t)
 
+display_diagonal(s, t, -6)
 print("Hello, world!")
