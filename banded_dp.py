@@ -21,11 +21,10 @@ def banded_dynprog(alphabet, scoring_matrix, seq_s, seq_t, max_diff, min_diff, s
             print("seq_s[i-1] = seq_s [{}] = {}".format(i-1, seq_s[i-1]))
             print("seq_t[j-1] = seq_t [{}] = {}".format(j-1, seq_t[j-1]))
             matrix_v.print()
-            time.sleep(0.01) # todo: remove timer
             # every (i, j) to reach this point satisfies min_diff <= i-j <= max_diff
             best = 0
             reset = True
-            # # always exists todo except for 0,0 -> no -1, -1
+            # # always exists
             from_diagonal = matrix_v.get(i - 1, j - 1) + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1])
             if i - j + 1 <= max_diff:
                 from_up = matrix_v.get(i, j - 1) + score(alphabet, scoring_matrix, "_", seq_t[j - 1])
@@ -35,15 +34,15 @@ def banded_dynprog(alphabet, scoring_matrix, seq_s, seq_t, max_diff, min_diff, s
                 from_left = matrix_v.get(i - 1, j) + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
             else:
                 from_left = False
-            if best <= from_diagonal:
+            if from_diagonal and best <= from_diagonal:
                 best = from_diagonal
                 backtrack.set(i, j, "D")
                 reset = False
-            if best <= from_left:
+            if from_left and best <= from_left:
                 best = from_left
                 backtrack.set(i, j, "U")
                 reset = False
-            if best <= from_up:
+            if from_up and best <= from_up:
                 best = from_up
                 backtrack.set(i, j, "L")
                 reset = False
@@ -71,18 +70,20 @@ def banded_dynprog(alphabet, scoring_matrix, seq_s, seq_t, max_diff, min_diff, s
             show_s = seq_s[i] + show_s
             show_t = seq_t[j] + show_t
             print("Debug D: i = {}, j = {}".format(i, j))
+            display_alignment(show_s, show_t)
+
             pointer = backtrack.get(i, j)
         elif pointer == "L":
             j -= 1
-            show_s = seq_s[i] + show_s
-            show_t = " " + show_t
+            show_t = seq_t[j] + show_t
+            show_s = " " + show_s
             print("Debug L: i = {}, j = {}".format(i, j))
+            display_alignment(show_s, show_t)
             pointer = backtrack.get(i, j)
         elif pointer == "U":
             i -= 1
-            show_t = seq_t[j] + show_t
-            show_s = " " + show_s
-            print("Debug U: i = {}, j = {}".format(i, j))
+            show_s = seq_s[i] + show_s
+            show_t = " " + show_t
             pointer = backtrack.get(i, j)
     if show_alignment:
         display_alignment(show_s, show_t)
@@ -94,7 +95,7 @@ def score(alphabet, scoring_matrix, char1, char2):
     return scoring_matrix[(char1 == "_") * -1 or alphabet.index(char1)][(char2 == "_") * -1 or alphabet.index(char2)]
 
 
-def display_alignment(string1, string2):
+def display_alignment(string1, string2):    # todo: refactor to check alignment value and take lists of indices as input
     string3 = ''
     for i in range(min(len(string1), len(string2))):
         if string1[i] == string2[i]:
@@ -117,8 +118,8 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-offset = 3
-string1 = "A"*(offset+3) +"BCDBAD"
-string2 = "B"*3 + "BCDCBAD" # todo: investigate why fucky stuff happens when switched out for "BCDBBAD"
+offset = 6
+string1 = "AAAAAABBADADBBAD"
+string2 =       "BBDADABBAD" # todo: investigate why fucky stuff happens when switched out for "BCDBBAD"
 a = banded_dynprog(sigma, score_matrix, string1, string2, offset+1, offset-1)
 print("String1: {}, String2: {}".format(string1, string2))
