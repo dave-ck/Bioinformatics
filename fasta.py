@@ -48,9 +48,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                 updated = True
                 while updated:
                     updated = False
-                    print("Extending...")
                     while current_score > min_score_to_extend:
-                        # print("Extending left, from i = {} to i = {}".format(start_i, start_i - 1))
                         # extend left by decreasing start_i and end_j
                         if start_i < 1 or start_j < 1:
                             break  # cannot decrease index beyond zero - done with this loop
@@ -63,37 +61,14 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                             updated = True
                             best_score = current_score
                             best_start_i, best_start_j = start_i, start_j
-                            # print("Improved:")
-                            # s_sub = seq_s[start_i:end_i]  # debug
-                            # t_sub = seq_t[start_j:end_j]  # debug
-                            # if not best_score == score_seqs(alphabet, scoring_matrix, s_sub, t_sub):
-                            #     print("Error with start_i = {}, start_j = {}:".format(start_i, start_j))
-                            #     print("      with   end_i = {},   end_j = {}:".format(end_i, end_j))
-                            #     print("s_sub:", s_sub)
-                            #     print("t_sub:", t_sub)
-                            #     print(score_seqs(alphabet, scoring_matrix, s_sub, t_sub))
-                            #     print("!=")
-                            #
-                            # print("Best score = {}".format(best_score))
-                            # display_alignment(s_sub, t_sub)
                     # revert to best start found so far
                     start_i, start_j = best_start_i, best_start_j
                     current_score = best_score
-                    # s_sub = seq_s[start_i:end_i]  # debug
-                    # t_sub = seq_t[start_j:end_j]  # debug
-                    # print("Best score = {}, freshcalc = {}".format(best_score,
-                    #                                                score_seqs(alphabet, scoring_matrix, s_sub,
-                    #                                                           t_sub)))  # debug
-                    # display_alignment(s_sub, t_sub)
 
                     while current_score > min_score_to_extend:
                         # extend left by decreasing start_i and end_j
-                        if end_i + 1 >= len_s or end_j + 1 >= len_t:  # todo: correct cutoff indices
-                            # print("Breaking, would have reached i = {}, j = {}".format(end_i + 1, end_j + 1))
-                            break  # cannot decrease index beyond zero - done with this loop
-                        # print("Extending right, from i = {} to i = {}".format(end_i, end_i + 1))
-                        # print("             and from j = {} to j = {}".format(end_j, end_j + 1))
-                        # print("len_s = {}, len_t = {}".format(len_s, len_t))
+                        if end_i + 1 >= len_s or end_j + 1 >= len_t:
+                            break  # cannot increase index beyond sequence size
                         end_i += 1
                         end_j += 1
                         if end_i in seed_list:  # ensure only one pass
@@ -103,19 +78,6 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                             updated = True
                             best_score = current_score
                             best_end_i, best_end_j = end_i, end_j
-                            # print("Improved:")
-                            # s_sub = seq_s[start_i:end_i]  # debug
-                            # t_sub = seq_t[start_j:end_j]  # debug
-                            # if not best_score == score_seqs(alphabet, scoring_matrix, s_sub, t_sub):
-                            #     print("Error with start_i = {}, start_j = {}:".format(start_i, start_j))
-                            #     print("      with   end_i = {},   end_j = {}:".format(end_i, end_j))
-                            #     print("s_sub:", s_sub)
-                            #     print("t_sub:", t_sub)
-                            #     print(score_seqs(alphabet, scoring_matrix, s_sub, t_sub))
-                            #     print("!=")
-                            #
-                            # print("Best score = {}".format(best_score))
-                            # display_alignment(s_sub, t_sub)
                     end_i, end_j = best_end_i, best_end_j
                     current_score = best_score
                     # reset/backtrack to highest score yet
@@ -125,20 +87,15 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                 print("Best end i = {}; Best end j = {}".format(best_end_i, best_end_j))
                 s_sub = seq_s[best_start_i:best_end_i]
                 t_sub = seq_t[best_start_j:best_end_j]
-                print("Score calculated from scratch on:\n{}\n{}\n = {}:".format(s_sub, t_sub, score_seqs(alphabet, scoring_matrix, t_sub, s_sub)))
+                print("Score calculated from scratch on:\n{}\n{}\n = {}:".format(s_sub, t_sub,
+                                                                                 score_seqs(alphabet, scoring_matrix,
+                                                                                            t_sub, s_sub)))
                 display_alignment(s_sub, t_sub)
 
-                # remove "absorbed" seeds from seed_list
-    # tag diagonals (frequency analysis for each? naive count of matches along diagonal?)
-
-    # for high i-j offset frequency (diagonals with many pieces) combine pieces into regions by extending pieces
-    # greedily in a straight line
-
-    # identify those diagonals which contain the most matches (?)
-
-    # use banded DP on these diagonals (i.e. with width 12 - why??)
-    # print(json.dumps(index_table, indent=2))
-    # print(json.dumps(ij_diff_dict, indent=2))
+    # have obtained all diagonals
+    # select highest-scoring ones
+    # identify ones whose bands would overlap - these get wider bands
+    # run banded DP on their bands with base width 12
 
 
 # one-line function, keep for cleaner code
