@@ -58,23 +58,28 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                         if start_i in seed_list:  # ensure only one pass
                             seed_list.remove(start_i)
                         if current_score > best_score:
+                            print("Improved: extended left and matched {},{}".format(seq_s[start_i], seq_t[start_j]))
+                            print("with i = {} -> {}, j = {} -> {}".format(start_i, end_i, start_j, end_j))
+                            print("This improved top score from {} to {}".format(best_score, current_score))
                             updated = True
                             best_score = current_score
                             best_start_i, best_start_j = start_i, start_j
                     # revert to best start found so far
                     start_i, start_j = best_start_i, best_start_j
                     current_score = best_score
-
                     while current_score > min_score_to_extend:
                         # extend left by decreasing start_i and end_j
-                        if end_i + 1 >= len_s or end_j + 1 >= len_t:
+                        if end_i >= len_s or end_j >= len_t:
                             break  # cannot increase index beyond sequence size
                         end_i += 1
                         end_j += 1
                         if end_i in seed_list:  # ensure only one pass
                             seed_list.remove(end_i)
-                        current_score += score(alphabet, scoring_matrix, seq_s[end_i], seq_t[end_j])
+                        current_score += score(alphabet, scoring_matrix, seq_s[end_i-1], seq_t[end_j-1])
                         if current_score > best_score:
+                            print("Improved: extended right and matched {},{}".format(seq_s[end_i-1], seq_t[end_j-1]))
+                            print("with i = {} -> {}, j = {} -> {}".format(start_i, end_i, start_j, end_j))
+                            print("This improved top score from {} to {}".format(best_score, current_score))
                             updated = True
                             best_score = current_score
                             best_end_i, best_end_j = end_i, end_j
