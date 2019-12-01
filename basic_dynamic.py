@@ -86,7 +86,7 @@ def display_alignment(string1, string2):
 
 # test code below
 
-"""
+
 sigma = "ABCD"
 score_matrix = [[1, -5, -5, -5, -1],
                 [-5, 1, -5, -5, -1],
@@ -94,6 +94,6 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-a = dynprog_np(sigma, score_matrix, "AAAAACCDDCCDDAAAAACC", "CCAAADDAAAACCAAADDCCAAAA")
+a = dynprog(sigma, score_matrix, "ACCDCA", "ACCDCA", show_alignment=True)
+print(a)
 
-"""

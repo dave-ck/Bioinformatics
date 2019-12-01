@@ -40,15 +40,15 @@ class MatrixBand:
 
 
 # TEST CODE BELOW - COMPARISON WITH "NAIVE" QUADRATIC-SPACE IMPLEMENTATION
-k = 3
-len_t = 15  # j indexed
-len_s = 10  # i indexed
-diff = 0
-
-m_good = MatrixBand(diff + k, diff - k, len_t, dtype='int', default=0)
-m_good.set(0, 0, 3)
-m_good.set(1, 0, 2)  # good
-m_good.set(3, 1, 3)  # good
-m_good.set(0, 1, 5)  # good
-m_good.max_value_coords()
-m_good.print()
+# k = 3
+# len_t = 15  # j indexed
+# len_s = 10  # i indexed
+# diff = 0
+#
+# m_good = MatrixBand(diff + k, diff - k, len_t, dtype='int', default=0)
+# m_good.set(0, 0, 3)
+# m_good.set(1, 0, 2)  # good
+# m_good.set(3, 1, 3)  # good
+# m_good.set(0, 1, 5)  # good
+# m_good.max_value_coords()
+# m_good.print()
