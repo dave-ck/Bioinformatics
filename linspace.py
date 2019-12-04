@@ -19,7 +19,7 @@ def dynproglin(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     pass
 
 
-def get_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t):
+def get_local_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t):
     scoring_matrix = np.array(scoring_matrix)
     len_s, len_t = len(seq_s), len(seq_t)
     matrix_v = np.zeros([len_s + 1, 2], dtype=int)  # because doing local alignment, no negative values
@@ -58,16 +58,31 @@ def get_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t):
                 best_score = best_for_cell
                 best_ptr_end = (i, j)
                 best_ptr_start = tuple(backtrack[i, 1])  # need to apply tuple to avoid pass-by-reference
-                if best_ptr_start[0] == 0 and best_ptr_start[1] == 0:
-                    print("Hi")
-                else:
-                    print("Howdy", best_ptr_start)
-        print(backtrack)
         # switch out column 1 for column 0
         matrix_v[:, [0, 1]] = matrix_v[:, [1, 0]]
         backtrack[:, [0, 1]] = backtrack[:, [1, 0]]
-    print("Howdyado", best_ptr_start)
     return [best_score, best_ptr_start, best_ptr_end]
+
+
+def get_global_score(alphabet, scoring_matrix, seq_s, seq_t):
+    scoring_matrix = np.array(scoring_matrix)
+    len_s, len_t = len(seq_s), len(seq_t)
+    matrix_v = np.zeros([len_s + 1, 2], dtype=int)
+    matrix_v[0, 0] = 0
+    for i in range(1, len_s + 1):
+        matrix_v[i, 0] = matrix_v[i - 1, 0] + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
+    for j in range(1, len_t + 1):
+        matrix_v[0, 1] = matrix_v[0, 0] + score(alphabet, scoring_matrix, seq_t[j - 1], "_")
+        for i in range(1, len_s + 1):
+            # fill column j (held at 1) using column j-1 (held at 0)
+            from_diagonal = matrix_v[i - 1, 0] + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1])
+            from_up = matrix_v[i, 0] + score(alphabet, scoring_matrix, "_", seq_t[j - 1])
+            from_left = matrix_v[i - 1, 1] + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
+            best_for_cell = max(from_diagonal, from_up, from_left)
+            matrix_v[i, 1] = best_for_cell
+        # switch out column 1 for column 0
+        matrix_v[:, [0, 1]] = matrix_v[:, [1, 0]]
+    return matrix_v[-1, 0]  # return the corner value of matrix_v - not held at -1, 1 because of swapping columns
 
 
 # one-line function, keep for cleaner code
@@ -98,5 +113,12 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-a = get_score_and_endpoints(sigma, score_matrix, "BBBBAACAA", "AAACBB")
+seq_s = "AACCDD"
+seq_t = "BBCCDDBB"
+
+# todo: check that endpoints are correctly identified: issue example from DUO not consistent with indices returned
+# High-score segments of perfect matches separated by short segments of cheap indels.
+a = get_local_score_and_endpoints(sigma, score_matrix, seq_s, seq_t)
+print(a)
+a = get_global_score(sigma, score_matrix, seq_s, seq_t)
 print(a)
