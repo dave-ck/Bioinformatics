@@ -192,13 +192,13 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-seq_s = "AAAAACCDDCCDDAAAAACC"
-seq_t = "CCAAADDAAAACCAAADDCCAAAA"
+seq_s = "ACCDDDDCC"
+seq_t = "CCAAADDDDCC"
+# adding this^ "A" causes issues
 # todo: this alignment scores 20, and is returned as scoring 39 by dynproglin. Find out why.
 # todo:  issue is with this bit         matching A's instead of D's and C's for some reason
 # todo:                         vvv
-alignment_s = [5, 6, 7, 8, 9, 10, 13, 14, 15, 18, 19]
-alignment_t = [0, 1, 5, 6, 11, 12, 13, 14, 15, 18, 19]
+
 
 # from wikipedia example: https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm
 # sigma = "ACGT"
@@ -218,6 +218,8 @@ a = dynproglin(sigma, score_matrix, seq_s, seq_t)
 # a = needleman_wunsch_char_v_seq(sigma, score_matrix, "C", "C")
 print("Yeet")
 print(a)
+alignment_s = a[1]
+alignment_t = a[2]
 
 b = score_alignment(sigma, score_matrix, alignment_s, alignment_t, seq_s, seq_t)
 print(b)
