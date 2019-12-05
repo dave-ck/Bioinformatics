@@ -11,7 +11,8 @@ def dynproglin(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     start_s, start_t = start_ptr
     end_s , end_t = end_ptr
     indices_s, indices_t = hirschberg(sigma, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t])
-    indices_s = LIS
+    indices_s = list(map(lambda x: x + start_s, indices_s))
+    indices_t = list(map(lambda x: x + start_t, indices_t))
     return score, indices_s, indices_t
 
 
@@ -174,7 +175,7 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-1, -1, -4, -4, -9]]
 
 seq_s = "ADD"
-seq_t = "BBBBADD"
+seq_t = "BADD"
 
 # from wikipedia example: https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm
 # sigma = "ACGT"
