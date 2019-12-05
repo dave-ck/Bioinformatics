@@ -1,5 +1,5 @@
 import math
-
+import submit_main
 import numpy as np
 
 
@@ -10,7 +10,10 @@ def dynproglin(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     score, start_ptr, end_ptr = get_local_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t)
     start_s, start_t = start_ptr
     end_s, end_t = end_ptr
-    indices_s, indices_t = hirschberg(sigma, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t])
+    print("Calling hirschberg({}, {}, {}, {})".format(alphabet, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t]))
+    indices_s, indices_t = hirschberg(alphabet, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t])
+    # res = submit_main.dynprog(alphabet, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t])
+    # indices_s, indices_t = res[1], res[2]
     indices_s = list(map(lambda x: x + start_s, indices_s))
     indices_t = list(map(lambda x: x + start_t, indices_t))
     return score, indices_s, indices_t
@@ -59,17 +62,26 @@ def hirschberg(alphabet, scoring_matrix, seq_s, seq_t):
         swapped = True  # keep track of whether s and t were swapped around to allow wlog assumption len_t > len_s
     else:
         swapped = False
+    print("Called on s={}, t={}".format(seq_s, seq_t))
     if len(seq_s) == 1 or len(seq_t) == 1:
         alignment_s, alignment_t = needleman_wunsch_char_v_seq(alphabet, scoring_matrix, seq_s, seq_t)
     else:
         len_t = len(seq_t)
         t_mid = math.floor(len_t / 2)
+        print("Running global on: {}, {}".format(seq_s, seq_t[t_mid:]))
         score_left = get_global_score(alphabet, scoring_matrix, seq_s, seq_t[:t_mid])
         rev_s = seq_s[::-1]
-        score_right = get_global_score(alphabet, scoring_matrix, rev_s, seq_t[t_mid:])
-        score_right = list(reversed(score_right))
-        sum_scores = score_left + score_right
+        seq_t_pt2 = seq_t[t_mid:]
+        rev_t_pt2 = seq_t_pt2[::-1]
+        print("Running global on: {}, {}".format(rev_s, seq_t[t_mid:]))
+        score_right = get_global_score(alphabet, scoring_matrix, rev_s, rev_t_pt2)
+        rev_right = list(reversed(score_right))
+        sum_scores = score_left + rev_right
+        print(score_left)
+        print(rev_right)
+        print(sum_scores)
         s_mid = np.where(sum_scores == np.amax(sum_scores))[0][0]
+        print(s_mid)
         # todo: fix relative addressing
         alignment_s_1, alignment_t_1 = hirschberg(alphabet, scoring_matrix, seq_s[:s_mid], seq_t[:t_mid])
         alignment_s_2, alignment_t_2 = hirschberg(alphabet, scoring_matrix, seq_s[s_mid:], seq_t[t_mid:])
@@ -209,7 +221,6 @@ seq_t = "CAAADC"
 # seq_s = "AACCCC"
 # seq_t = "CAACC"
 
-# todo: check that endpoints are correctly identified: issue example from DUO not consistent with indices returned
 # High-score segments of perfect matches separated by short segments of cheap indels.
 # a = get_local_score_and_endpoints(sigma, score_matrix, seq_s, seq_t)
 a = dynproglin(sigma, score_matrix, seq_s, seq_t)

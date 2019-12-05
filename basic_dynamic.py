@@ -14,8 +14,8 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
             best = 0
             reset = True
             from_diagonal = matrix_v[i - 1, j - 1] + score(alphabet, scoring_matrix, seq_s[i - 1], seq_t[j - 1])
-            from_up = matrix_v[i, j - 1] + score(alphabet, scoring_matrix, "_", seq_t[j - 1])
-            from_left = matrix_v[i - 1, j] + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
+            from_left = matrix_v[i, j - 1] + score(alphabet, scoring_matrix, "_", seq_t[j - 1])
+            from_up = matrix_v[i - 1, j] + score(alphabet, scoring_matrix, seq_s[i - 1], "_")
             if best <= from_diagonal:
                 best = from_diagonal
                 backtrack[i, j] = "D"
@@ -23,12 +23,12 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                 reset = False
             if best <= from_left:
                 best = from_left
-                backtrack[i, j] = "U"
+                backtrack[i, j] = "L"
                 matrix_v[i, j] = best
                 reset = False
             if best <= from_up:
                 best = from_up
-                backtrack[i, j] = "L"
+                backtrack[i, j] = "U"
                 matrix_v[i, j] = best
                 reset = False
             if reset:
@@ -62,7 +62,7 @@ def dynprog(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
             show_s = " " + show_s
             pointer = backtrack[i, j]
     if show_alignment:
-        display_alignment(show_s, show_t)
+        display_alignment(show_t, show_s)
     return [best_score, alignment_s, alignment_t]
 
 
@@ -71,17 +71,17 @@ def score(alphabet, scoring_matrix, char1, char2):
     return scoring_matrix[(char1 == "_") * -1 or alphabet.index(char1)][(char2 == "_") * -1 or alphabet.index(char2)]
 
 
-def display_alignment(string1, string2):
+def display_alignment(show_s, show_t):
     string3 = ''
-    for i in range(min(len(string1), len(string2))):
-        if string1[i] == string2[i]:
+    for i in range(min(len(show_s), len(show_t))):
+        if show_s[i] == show_t[i]:
             string3 = string3 + "|"
         else:
             string3 = string3 + " "
     print('Alignment ')
-    print('String1: ' + string1)
+    print('String s: ' + show_s)
     print('         ' + string3)
-    print('String2: ' + string2 + '\n\n')
+    print('String t: ' + show_t + '\n\n')
 
 
 # test code below
