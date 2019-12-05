@@ -30,6 +30,8 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                     ij_diff_dict[i - j].append(i)  # instead of storing {diff:(i,j)} store {diff:i} and find j=i+diff
                 else:
                     ij_diff_dict[i - j] = [i]
+    print("Diagonal seeds dict")
+    print(json.dumps(ij_diff_dict, indent=2))
     # select and print maximum diagonals
     for diff in ij_diff_dict:
         if len(ij_diff_dict[diff]) > min_seeds_to_extend:
@@ -67,7 +69,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                     start_i, start_j = best_start_i, best_start_j
                     current_score = best_score
                     while current_score > min_score_to_extend:
-                        # extend left by decreasing start_i and end_j
+                        # extend right by increasing start_i and end_j
                         if end_i >= len_s or end_j >= len_t:
                             break  # cannot increase index beyond sequence size
                         end_i += 1
@@ -94,6 +96,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                 #                                                                             scoring_matrix,
                 #                                                                             t_sub, s_sub)))
                 # display_alignment(s_sub, t_sub)
+    print(max_score_for_diff)
     if not all_scores:
         return "Could not find {} seeds on the same (i-j) diagonal with ktup = {}".format(min_seeds_to_extend, ktup)
     cutoff = sorted(all_scores)[-1 * min(len(all_scores), 10)]  # take 10th biggest as cutoff, if it exists
