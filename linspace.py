@@ -54,11 +54,11 @@ def needleman_wunsch_char_v_seq(alphabet, scoring_matrix, seq_s, seq_t):
 
 
 def hirschberg(alphabet, scoring_matrix, seq_s, seq_t):
-    # if len(seq_s) > len(seq_t):
-    #     seq_s, seq_t = seq_t, seq_s
-    #     swapped = True  # keep track of whether s and t were swapped around to allow wlog assumption len_t > len_s
-    # else:
-    #     swapped = False
+    if len(seq_s) > len(seq_t):
+        seq_s, seq_t = seq_t, seq_s
+        swapped = True  # keep track of whether s and t were swapped around to allow wlog assumption len_t > len_s
+    else:
+        swapped = False
     if len(seq_s) == 1 or len(seq_t) == 1:
         alignment_s, alignment_t = needleman_wunsch_char_v_seq(alphabet, scoring_matrix, seq_s, seq_t)
     else:
@@ -76,8 +76,8 @@ def hirschberg(alphabet, scoring_matrix, seq_s, seq_t):
         alignment_s_2 = list(map(lambda x: x + s_mid, alignment_s_2))
         alignment_t_2 = list(map(lambda x: x + t_mid, alignment_t_2))
         alignment_s, alignment_t = alignment_s_1 + alignment_s_2, alignment_t_1 + alignment_t_2
-    # if swapped:
-    #     alignment_t, alignment_s = alignment_s, alignment_t
+    if swapped:
+        alignment_t, alignment_s = alignment_s, alignment_t
     return alignment_s, alignment_t
 
 
@@ -192,12 +192,10 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-seq_s = "ACCDDDDCC"
-seq_t = "CCAAADDDDCC"
-# adding this^ "A" causes issues
-# todo: this alignment scores 20, and is returned as scoring 39 by dynproglin. Find out why.
-# todo:  issue is with this bit         matching A's instead of D's and C's for some reason
-# todo:                         vvv
+seq_s = "CDC"
+seq_t = "CAAADC"
+# adding   ^ "A" causes issues
+# todo: check if issues still arise when dynprog (simple dynamic) is used instead of Hirschberg; shouldn't...
 
 
 # from wikipedia example: https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm
@@ -218,6 +216,8 @@ a = dynproglin(sigma, score_matrix, seq_s, seq_t)
 # a = needleman_wunsch_char_v_seq(sigma, score_matrix, "C", "C")
 print("Yeet")
 print(a)
+print(seq_s)
+print(seq_t)
 alignment_s = a[1]
 alignment_t = a[2]
 
