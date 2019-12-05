@@ -9,7 +9,7 @@ def dynproglin(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     # todo: chop off to make local
     score, start_ptr, end_ptr = get_local_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t)
     start_s, start_t = start_ptr
-    end_s , end_t = end_ptr
+    end_s, end_t = end_ptr
     indices_s, indices_t = hirschberg(sigma, score_matrix, seq_s[start_s:end_s], seq_t[start_t:end_t])
     indices_s = list(map(lambda x: x + start_s, indices_s))
     indices_t = list(map(lambda x: x + start_t, indices_t))
@@ -164,6 +164,24 @@ def display_alignment(string1, string2):
     print('String2: ' + string2 + '\n\n')
 
 
+def score_alignment(alphabet, scoring_matrix, alignment_s, alignment_t, seq_s, seq_t):
+    if not seq_t and not seq_s:
+        return 0
+    current_score = 0
+    for i, j in zip(alignment_s, alignment_t):
+        current_score += score(alphabet, scoring_matrix, seq_s[i], seq_t[j])  # score of all subs
+    for index in range(len(alignment_s) - 1):
+        i = alignment_s[index]
+        i_p = alignment_s[index + 1]
+        j = alignment_t[index]
+        j_p = alignment_t[index + 1]
+        for char in seq_s[i + 1:i_p]:
+            current_score += score(alphabet, scoring_matrix, char, "_")  # score of all s_dels
+        for char in seq_t[j + 1:j_p]:
+            current_score += score(alphabet, scoring_matrix, char, "_")  # score of all t_dels
+    return current_score
+
+
 # test code below
 
 # From DUO example
@@ -174,8 +192,13 @@ score_matrix = [[1, -5, -5, -5, -1],
                 [-5, -5, -5, 6, -4],
                 [-1, -1, -4, -4, -9]]
 
-seq_s = "ADD"
-seq_t = "BADD"
+seq_s = "AAAAACCDDCCDDAAAAACC"
+seq_t = "CCAAADDAAAACCAAADDCCAAAA"
+# todo: this alignment scores 20, and is returned as scoring 39 by dynproglin. Find out why.
+# todo:  issue is with this bit         matching A's instead of D's and C's for some reason
+# todo:                         vvv
+alignment_s = [5, 6, 7, 8, 9, 10, 13, 14, 15, 18, 19]
+alignment_t = [0, 1, 5, 6, 11, 12, 13, 14, 15, 18, 19]
 
 # from wikipedia example: https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm
 # sigma = "ACGT"
@@ -195,3 +218,6 @@ a = dynproglin(sigma, score_matrix, seq_s, seq_t)
 # a = needleman_wunsch_char_v_seq(sigma, score_matrix, "C", "C")
 print("Yeet")
 print(a)
+
+b = score_alignment(sigma, score_matrix, alignment_s, alignment_t, seq_s, seq_t)
+print(b)
