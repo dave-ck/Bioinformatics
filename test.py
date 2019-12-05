@@ -1,4 +1,4 @@
-from submit_main import dynprog, score
+from submit_main import dynprog, score, dynproglin, heuralign
 
 
 def score_alignment(alphabet, scoring_matrix, seq_s, seq_t, alignment_s, alignment_t):
@@ -6,28 +6,21 @@ def score_alignment(alphabet, scoring_matrix, seq_s, seq_t, alignment_s, alignme
         return 0
     total_score = 0
     for i in range(alignment_s[0], alignment_s[-1] + 1):
-        print("s_{} = {}".format(i, seq_s[i]))
         if i in alignment_s:
             index = alignment_s.index(i)
             j = alignment_t[index]
             subst = score(alphabet, scoring_matrix, seq_s[i], seq_t[j])
-            print("Subst {} for {}; incrementing score by {}".format(seq_s[i], seq_t[j], subst))
             total_score += subst
         else:
             delete = score(alphabet, scoring_matrix, seq_s[i], "_")
-            print("Del {}; incrementing score by {}".format(seq_s[i], delete))
             total_score += delete
-    print("\n*** Processing seq_t ***\n")
     for j in range(alignment_t[0], alignment_t[-1] + 1):
-        print("t_{} = {}".format(j, seq_t[j]))
         if j in alignment_t:
             index = alignment_t.index(j)
             i = alignment_s[index]
-            print("Subst {} for {}; score unaffected, already seen in previous loop".format(seq_s[i], seq_t[j]))
             pass  # already accounted for in loop above; don't want to double up
         else:
             delete = score(alphabet, scoring_matrix, seq_t[j], "_")
-            print("Del {}; incrementing score by {}".format(seq_t[j], delete))
             total_score += delete
     return total_score
 
@@ -87,16 +80,17 @@ test_cases = {"test.py": {"test_params": ("ABC",
                          "correct_score": 5},
               }
 
-test_choice = "test.py"
-a = dynprog(*test_cases[test_choice]["test_params"], True)
-if a[0] == test_cases[test_choice]["correct_score"]:
-    print("Score correctly found:", a[0])
-else:
-    print("Correct score:", test_cases[test_choice]["correct_score"])
-    print("Score found:", a[0])
-if (a[1], a[2]) == test_cases[test_choice]["correct_indices"]:
-    print("Indices correctly found: ", a[1], a[2])
-else:
-    print("Correct indices:", *test_cases[test_choice]["correct_indices"])
-    print("Indices found: ", a[1], a[2])
-    print("Indices found give a score of:", score_alignment(*test_cases[test_choice]["test_params"], a[1], a[2]))
+for test_choice in ["interspersed", "lonk"]:
+    a = heuralign(*test_cases[test_choice]["test_params"], False)
+    print(a)
+    if a[0] == test_cases[test_choice]["correct_score"]:
+        print("Score correctly found:", a[0])
+    else:
+        print("Correct score:", test_cases[test_choice]["correct_score"])
+        print("Score found:", a[0])
+    if (a[1], a[2]) == test_cases[test_choice]["correct_indices"]:
+        print("Indices correctly found: ", a[1], a[2])
+    else:
+        print("Correct indices:", *test_cases[test_choice]["correct_indices"])
+        print("Indices found: ", a[1], a[2])
+        print("Indices found give a score of:", score_alignment(*test_cases[test_choice]["test_params"], a[1], a[2]))
