@@ -1,0 +1,47 @@
+\documentclass[english, 11pt]{article}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{babel, blindtext, amsmath}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{csquotes}
+\title{Bioinformatics Coursework Part 2 - Question 1.}
+\author{David Kutner - rpxp63}
+\begin{document}
+\maketitle
+
+\section*{Description of scoring function}
+The cost to substitute sequence $X$ in for every sequence $Y$ in an area of length $L$ is $(1+\log_2(L))*Score_{X,Y}$, where $Score_{X,Y}$ is the naive score for a global alignment of sequences $X$ and $Y$.
+Suppose, for instance, that for some obscure biological reason there exist large areas $A$ of the genome in which the sequence $X$ always transforms into the sequence $Y$. Also suppose that the sequence $X$ (or conversely $Y$) arises often outside (inside) these areas. We would then wish to have the cost of applying this substitution ($X$ for $Y$) throughout the area $A_i$ or length $L_i$, say $n_i$ times, be lower than $Score_{X,Y}*n_i$, but still greater than $Score_{X,Y}$ so that the new rule is only used in those cases outside of the areas $A$. 
+The function $(1+\log_2(L))*Score_{X,Y}$ allows us to achieve this; indeed, for a low number of occurrences it is worse to apply our new rule than it is to substitute $X$ for $Y$ the ``normal" way. However, if we have a large cluster of $X$'s corresponding to a large cluster of $Y$'s (because we are in an area $A_i$) then it is worthwhile to apply the new rule, and we obtain an alignment which is preferable.
+
+
+
+%% CpG islands: pair CG often transforms to TG outside these
+\section*{Example}
+Suppose our alphabet is ``ACGT" and our ``naive" scoring function is given by the character-wise scoring matrix $Score_{c_1, c_2}$ in Equ. 1.
+\begin{equation}
+	Score_{c_1, c_2} = 
+		\begin{pmatrix}
+			sub_{A,A} & sub_{C,A} & sub_{G,A} & sub_{T,A} & del_{A} \\
+			sub_{A,C} & sub_{C,C} & sub_{G,C} & sub_{T,C} & del_{C} \\
+			sub_{A,G} & sub_{C,G} & sub_{G,G} & sub_{T,G} & del_{G} \\
+			sub_{A,T} & sub_{C,T} & sub_{G,T} & sub_{T,T} & del_{T} \\
+			ins_{A} & ins_{C} & ins_{G} & ins_{T} & 0 
+		\end{pmatrix} = 
+		\begin{pmatrix}
+			2 & -2 & -2 & -2 & -1 \\
+			-2 & 2 & -2 & -2 & -1 \\
+			-2 & -2 & 2 & -2 & -1 \\
+			-2 & -2 & -2 & 2 & -1 \\
+			-1 & -1 & -1 & -1 & 0
+		\end{pmatrix}
+\end{equation}
+Take $X=$AC and $Y=$GA.
+Take our first sequence to be $S = ``\text{AC}"*16+``\text{TTGT}"*16+``\text{AC}"$  and our second sequence to be  $T = ``\text{GG}"*16+``\text{TTGT}"*16+``\text{GG}"$
+If we align these applying the unextended function given by the scoring matrix, we obtain a total score of 4 (-68 from aligning the mismatches (AC, GG) 17 times, and +128 from aligning TTGT with itself 16 times). 
+Using our extension, however, we can align the first 16 AC's to the first 16 GG's for a cost of $(1+\log_2(L))*Score_{X,Y} = (1 + \log_2(32))*-4 = 6*-4 = -24$, yielding a total score of 100 (-4 from the last mismatch (AC, GG), and still +128 from aligning TTGT with itself 16 times). 
+We cannot exploit the extension to also get rid of the final AC (in this example to show what would happen to a ``random" pattern ``X"), because it is too far removed from the area; if we try to include it we get a score of $(1+\log_2(L))*Score_{X,Y} = (1 + \log_2(96))*-4 \approx 7.58*-4 = -30.32$ for the mismatches, which gives us an overall score of 97.68 - worse than the 100 we would have gotten by processing it as the separate, random occurrence it actually is.
+
+
+
+\end{document}
