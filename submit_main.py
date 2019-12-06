@@ -85,7 +85,6 @@ def display_alignment(show_s, show_t):
     print('String t: ' + show_t + '\n\n')
 
 def dynproglin(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
-    # todo: chop off to make local
     score, start_ptr, end_ptr = get_local_score_and_endpoints(alphabet, scoring_matrix, seq_s, seq_t)
     start_s, start_t = start_ptr
     end_s, end_t = end_ptr
@@ -236,6 +235,7 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
     band_radius = 15
     min_score_to_extend = -3
     min_seeds_to_extend = 2
+    total_diags_to_extend = 10
     # initialize index table as dictionary of every sequence of letters of length ktup appearing in s
     scoring_matrix = np.array(scoring_matrix)
     len_s, len_t = len(seq_s), len(seq_t)
@@ -264,7 +264,6 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
             seed_list = ij_diff_dict[diff]
             # display_diagonal(seq_s, seq_t, diff)
             for seed_i in seed_list:
-                # todo: properly cull seeds from seed_list during search
                 # j = diff - i
                 start_i, end_i = seed_i, seed_i + ktup  # non-inclusive of end index
                 start_j, end_j = start_i - diff, start_i + ktup - diff  # tested j-calculation [gud]
@@ -312,17 +311,27 @@ def heuralign(alphabet, scoring_matrix, seq_s, seq_t, show_alignment=False):
                 max_score_for_diff[diff] = max(max_score_for_diff[diff], best_score)
                 all_scores.append(best_score)
     if not all_scores:
-        return "Could not find {} seeds on the same (i-j) diagonal with ktup = {}".format(min_seeds_to_extend, ktup)
-    cutoff = sorted(all_scores)[-1 * min(len(all_scores), 10)]  # take 10th biggest as cutoff, if it exists
+        print("Could not find {} seeds on the same (i-j) diagonal with ktup = {}; trying banded DP on i-j=0".format(min_seeds_to_extend, ktup))
+        return banded_dynprog(alphabet, scoring_matrix, seq_s, seq_t, band_radius*2, band_radius*2)
+    cutoff = sorted(all_scores)[-1 * min(len(all_scores), total_diags_to_extend)]
     good_diffs = []
     for diff in max_score_for_diff:
         if max_score_for_diff[diff] > cutoff:
             good_diffs.append(diff)
     # run banded DP on everything in good_diffs
     best = [0, [], []]
+    diff_bandwidth = {i: (i - band_radius, i + band_radius) for i in good_diffs}
+    for midpoint in range(-1*len_t, len_s):  # combine diagonals
+        for diag_1 in good_diffs:
+            if midpoint in range(*diff_bandwidth[diag_1]):
+                for diag_2 in good_diffs:
+                    if midpoint in range(*diff_bandwidth[diag_2]) and diag_2 != diag_1:
+                        good_diffs.remove(diag_2)
+                        diff_bandwidth[diag_1] = (min(diff_bandwidth[diag_1][0], diff_bandwidth[diag_2][0]),
+                                                  max(diff_bandwidth[diag_1][1], diff_bandwidth[diag_2][1]))
+                        del diff_bandwidth[diag_2]
     for diff in good_diffs:
-        max_diff = diff + band_radius
-        min_diff = diff - band_radius
+        min_diff, max_diff = diff_bandwidth[diff]
         answer = banded_dynprog(alphabet, scoring_matrix, seq_s, seq_t, max_diff, min_diff, show_alignment)
         if answer[0] > best[0]:
             best = answer

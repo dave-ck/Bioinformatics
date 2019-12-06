@@ -1,4 +1,6 @@
+import time
 from submit_main import dynprog, score, dynproglin, heuralign
+import random
 
 
 def score_alignment(alphabet, scoring_matrix, seq_s, seq_t, alignment_s, alignment_t):
@@ -23,6 +25,19 @@ def score_alignment(alphabet, scoring_matrix, seq_s, seq_t, alignment_s, alignme
             delete = score(alphabet, scoring_matrix, seq_t[j], "_")
             total_score += delete
     return total_score
+
+
+# return a sequence, guaranteed to contain the seed, whole, comprised of characters from alphabet and of length length
+def random_seq(alphabet, length, seed):
+    seq = ""
+    len1 = random.randint(0, length - len(seed))
+    len2 = length - len(seed) - len1
+    for _ in range(len1):
+        seq += random.choice(alphabet)
+    seq += seed
+    for _ in range(len2):
+        seq += random.choice(alphabet)
+    return seq
 
 
 test_cases = {"test.py": {"test_params": ("ABC",
@@ -70,18 +85,37 @@ test_cases = {"test.py": {"test_params": ("ABC",
                             67,
                             68, 69]),
                        "correct_score": 81},
-              "custom": {"test_params": ("ABC",
-                                         [[1, -1, -2, -1],
-                                          [-1, 2, -4, -1],
-                                          [-2, -4, 3, -2],
-                                          [-1, -1, -2, 0]],
-                                         "AABBAACA", "CBACCCBA"),
-                         "correct_indices": ([3, 5, 6], [1, 2, 3]),
-                         "correct_score": 5},
+              "lonkk": {"test_params": ("ABCD",
+                                        [[1, -5, -5, -5, -1],
+                                         [-5, 1, -5, -5, -1],
+                                         [-5, -5, 5, -5, -4],
+                                         [-5, -5, -5, 6, -4],
+                                         [-1, -1, -4, -4, -9]],
+                                        random_seq("ABCD", 200,
+                                                   "DDDDDDDDDDDDCCDDBBDDDDCCBBDDDDBDDCCDDCDDDCDC"),
+                                        random_seq("ABCD", 220,
+                                                   "DDDDDDDDDDDDCCDDAADDDDCCAADDDDADDCCDDCDDDCDC")),
+                        "correct_indices": ([], []),
+                        "correct_score": 81},
+              "lonkkk": {"test_params": ("ABCD",
+                                         [[1, -5, -5, -5, -1],
+                                          [-5, 1, -5, -5, -1],
+                                          [-5, -5, 5, -5, -4],
+                                          [-5, -5, -5, 6, -4],
+                                          [-1, -1, -4, -4, -9]],
+                                         random_seq("ABCD", 2000,
+                                                    "DCDDCDCDDCDDCCDDDCDDCDDDDCDCDDDCDCADAACDACDACADDCADCACDACDADDCDC"),
+                                         random_seq("ABCD", 1900,
+                                                    "DCDDCDCDDCDDCCDDDCDDCDDDDCDCDDDCDCBDBBCDBCDBCBDDCBDCBCDBCDBDDCDC")),
+                         "correct_indices": ([], []),
+                         "correct_score": 81},
               }
 
-for test_choice in ["interspersed", "lonk"]:
+for test_choice in ["interspersed", "lonk", "lonkk", "lonkkk"]:
+    print()
+    start = time.time()
     a = heuralign(*test_cases[test_choice]["test_params"], False)
+    print("Finished computing in {} seconds".format(time.time()-start))
     print(a)
     if a[0] == test_cases[test_choice]["correct_score"]:
         print("Score correctly found:", a[0])
@@ -94,3 +128,4 @@ for test_choice in ["interspersed", "lonk"]:
         print("Correct indices:", *test_cases[test_choice]["correct_indices"])
         print("Indices found: ", a[1], a[2])
         print("Indices found give a score of:", score_alignment(*test_cases[test_choice]["test_params"], a[1], a[2]))
+    print("\n\n")
